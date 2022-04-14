@@ -63,27 +63,6 @@ export class AuthService {
     },
   };
 
-  async sendToFinotech(data) {
-    try {
-      await this.http.post(
-        `https://apibeta.finnotech.ir/facility/v2/clients/maxpool/finnotext?trackId=${randomUUID()}`,
-        data,
-        {
-          headers: {
-            Authorization: process.env.AUTH_FINOTECH,
-            'Content-Type': 'application/json',
-          },
-        },
-      );
-
-      //todo check failure cases
-      // if (res.status==200 && res?.data?.status===FinitechStatusEnum.DONE){ }
-    } catch (e) {
-      return new ErrorResponse(StatusCode.BAD_REQUEST, {
-        data: 'Phone_number Is Incorrect!',
-      });
-    }
-  }
 
   async register(authRegisterDto: AuthRegisterDto) {
     try {
@@ -91,11 +70,7 @@ export class AuthService {
 
       const otp_number = Math.floor(100000 + Math.random() * 900000);
 
-      const data = {
-        from: '20002323',
-        to: [authRegisterDto.phone_number],
-        message: [otp_number],
-      };
+    
       const value = {
         otp_number: otp_number,
         phone_number: authRegisterDto.phone_number,
@@ -113,7 +88,6 @@ export class AuthService {
 
         await this.redisFunc.set(authRegisterDto.phone_number, true);
         await this.redisFunc.expire(authRegisterDto.phone_number, 90);
-        this.sendToFinotech(data).then();
 
         return new SuccessResponse(StatusCode.OK, {
           data: 'OTP send',
